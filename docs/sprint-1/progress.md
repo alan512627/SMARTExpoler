@@ -8,3 +8,4 @@ Actions taken:
 - Initial todos added to session tracker
 
 Next: initialize git repo (if requested), scaffold project files.
+\n[2026-06-16 18:41] Started tabbed UI & FileList components (Nova) ¡X basic scaffold created.
