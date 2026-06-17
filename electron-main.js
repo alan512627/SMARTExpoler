@@ -23,6 +23,21 @@ if(process.env.SELFTEST){
 function createWindow(){
   const win = new BrowserWindow({ width:1200, height:800, webPreferences: { nodeIntegration: false, contextIsolation: true, preload: path.join(__dirname,'preload.js') } });
   win.loadURL('http://localhost:5173');
+  // forward renderer logs to main console
+  ipcMain.on('renderer-log', (event, msg) => {
+    console.log('RENDERER_LOG:', msg);
+  });
+
+  win.webContents.once('did-finish-load', async () => {
+    try{
+      const testPath = path.join(__dirname, 'package.json');
+      console.log('MAIN: triggering renderer readFile for', testPath);
+      const res = await win.webContents.executeJavaScript(`window.api.readFile(${JSON.stringify(testPath)})`);
+      console.log('MAIN: executeJavaScript result:', res && res.ok ? `ok (len=${res.content.length})` : JSON.stringify(res));
+    } catch(e){
+      console.error('MAIN: executeJavaScript error', e && e.message ? e.message : e);
+    }
+  });
 }
 
 app.whenReady().then(() => {
