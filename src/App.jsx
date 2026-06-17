@@ -17,12 +17,31 @@ export default function App(){
   const [active,setActive] = useState(null);
   const [showAgent,setShowAgent] = useState(false);
 
-  function openFile(file){
+  async function openFile(file){
     const existing = tabs.find(t=>t.path===file.path);
     if(existing){ setActive(existing.id); return; }
-    const newTab = { id: makeId(), title: file.name, path: file.path, content: `Loaded content for ${file.name}\n\n(placeholder)` };
+    const id = makeId();
+    const placeholder = `Loading ${file.name}...`;
+    const newTab = { id, title: file.name, path: file.path, content: placeholder };
     setTabs(prev=>[...prev,newTab]);
-    setActive(newTab.id);
+    setActive(id);
+
+    // attempt to read via Electron API if available
+    if(window.api && window.api.readFile){
+      try{
+        const res = await window.api.readFile(file.path);
+        if(res && res.ok){
+          setTabs(prev=>prev.map(t=> t.id===id ? {...t, content: res.content} : t));
+        } else {
+          setTabs(prev=>prev.map(t=> t.id===id ? {...t, content: `Error reading file: ${res && res.error ? res.error : 'unknown'}`} : t));
+        }
+      } catch(e){
+        setTabs(prev=>prev.map(t=> t.id===id ? {...t, content: `Exception: ${e.message}`} : t));
+      }
+    } else {
+      // not running in Electron; keep placeholder
+      setTabs(prev=>prev.map(t=> t.id===id ? {...t, content: `Preview not available in browser. Path: ${file.path}`} : t));
+    }
   }
 
   function closeTab(id){
