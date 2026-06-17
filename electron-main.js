@@ -1,4 +1,6 @@
-﻿const { app, BrowserWindow, ipcMain } = require('electron');
+﻿const electron = require('electron');
+console.log('DEBUG: require("electron") keys =', Object.keys(electron));
+const { app, BrowserWindow, ipcMain } = electron;
 const path = require('path');
 const fs = require('fs').promises;
 
@@ -18,6 +20,8 @@ app.whenReady().then(() => {
         return { ok: false, error: err.message };
       }
     });
+  } else {
+    console.log('DEBUG: ipcMain is not available or missing handle');
   }
   createWindow();
 });
