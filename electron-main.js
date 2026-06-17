@@ -4,6 +4,22 @@ const { app, BrowserWindow, ipcMain } = electron;
 const path = require('path');
 const fs = require('fs').promises;
 
+// Quick self-test mode: read package.json and exit
+if(process.env.SELFTEST){
+  (async ()=>{
+    try{
+      const p = path.join(__dirname,'package.json');
+      const data = await fs.readFile(p,'utf8');
+      console.log('SELFTEST: read package.json length=', data.length);
+      console.log(data.split('\n').slice(0,5).join('\n'));
+      process.exit(0);
+    } catch(e){
+      console.error('SELFTEST ERROR', e && e.message ? e.message : e);
+      process.exit(2);
+    }
+  })();
+}
+
 function createWindow(){
   const win = new BrowserWindow({ width:1200, height:800, webPreferences: { nodeIntegration: false, contextIsolation: true, preload: path.join(__dirname,'preload.js') } });
   win.loadURL('http://localhost:5173');
