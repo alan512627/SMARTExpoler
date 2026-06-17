@@ -7,14 +7,18 @@ function createWindow(){
   win.loadURL('http://localhost:5173');
 }
 
-ipcMain.handle('read-file', async (event, filePath) => {
-  try {
-    const data = await fs.readFile(filePath, { encoding: 'utf8' });
-    return { ok: true, content: data };
-  } catch (err) {
-    return { ok: false, error: err.message };
+app.whenReady().then(() => {
+  // register IPC handlers after app is ready
+  if (ipcMain && ipcMain.handle) {
+    ipcMain.handle('read-file', async (event, filePath) => {
+      try {
+        const data = await fs.readFile(filePath, { encoding: 'utf8' });
+        return { ok: true, content: data };
+      } catch (err) {
+        return { ok: false, error: err.message };
+      }
+    });
   }
+  createWindow();
 });
-
-app.whenReady().then(createWindow);
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
